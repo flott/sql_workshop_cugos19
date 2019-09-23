@@ -8,12 +8,12 @@ CUGOS Fall Fling Workshop, 2019-10-06
 Data provided by permission of [King County](https://gis-kingcounty.opendata.arcgis.com/). 
 
 ## Agenda
-1. What is SQL?
-2. Why use SQL for geospatial analysis?
-3. Overview of databases
+1. What is SQL, and why use it for geospatial analysis?
+3. Overview of geospatial databases
 4. Overview of tools and [functions](http://www.gaia-gis.it/gaia-sins/spatialite-sql-4.3.0.html)
 5. Examples
     - Parks assessment
     - Voting information
     - Floodplain analysis
 6. Next steps
+

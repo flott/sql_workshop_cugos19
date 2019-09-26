@@ -16,4 +16,3 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
     - Voting information
     - Floodplain analysis
 6. Next steps
-

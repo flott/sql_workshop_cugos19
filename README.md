@@ -16,3 +16,21 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
     - Voting information
     - Floodplain analysis
 6. Next steps
+
+## QGIS / GeoPackage / Spatialite quirks
+
+To use Spatialite functions on GeoPackages, you need to run these queries first.
+
+```sql
+SELECT GetGpkgMode();  -- should return 0
+SELECT EnableGpkgMode();  -- should return NULL
+SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
+```
+
+If it gets stuck or the spatial functions stop working. The "turn it off and on again" approach:
+```sql
+SELECT DisableGpkgMode();
+SELECT GetGpkgMode();  -- should return 0
+SELECT EnableGpkgMode();  -- should return NULL
+SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
+```

@@ -19,17 +19,18 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
 
 ## QGIS / GeoPackage / Spatialite quirks
 
-To use Spatialite functions on GeoPackages, you need to run these queries first.
+To use Spatialite functions on GeoPackages in QGIS, you need to run these queries first.
 
 ```sql
-SELECT GetGpkgMode();  -- should return 0
+SELECT GetGpkgMode();  -- just a check. should return 0
 SELECT EnableGpkgMode();  -- should return NULL
 SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
 ```
 
-If it gets stuck or the spatial functions stop working. The "turn it off and on again" approach:
+If spatial functions stop working, the "turn it off and on again" approach works. This tends to happen when you haven't run a query in a while -- I think QGIS resets the database connection, and GeoPackage mode is only active for the duration of a connection.
+
 ```sql
-SELECT DisableGpkgMode();
+SELECT DisableGpkgMode(); -- should return NULL
 SELECT GetGpkgMode();  -- should return 0
 SELECT EnableGpkgMode();  -- should return NULL
 SELECT GetGpkgMode();  -- now it should return 1 (TRUE)

@@ -78,9 +78,14 @@ JOIN park_area p
 ON f.SiteName = p.SITENAME
 ```
 
+### Grouping
+
+When you group data, you can use **aggregate functions** like `MIN()`, `MAX()`, `AVG()`, or `COUNT()`.
+
 *What facility types are in the park, and how many of each?*
+
 ```sql
-SELECT f_type AS facility, count(f_type) AS facility_count
+SELECT f_type AS facility, COUNT(f_type) AS facility_count
 FROM facilities
 WHERE sitetype = 'Park Site'
 GROUP BY f_type

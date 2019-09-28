@@ -149,6 +149,26 @@ FROM trail_line t
 GROUP BY Surf_Type
 ```
 
+*What parks can I get to from the Snoqualmie Valley Trail?*
+Be aware of your data! If it were just a line, we could use `ST_Crosses`, but the Snoqualmie Valley Trail right-of-way is listed as its own park site, so the results wouldn't be very exciting. Instead, let's take the Snoqualmie Valley Trail park site and see what's adjacent to it.
+
+```sql
+WITH svt AS (
+	SELECT fid, geom
+	FROM park_area
+	WHERE SiteName = 'Snoqualmie Valley Trail Site'
+	)
+
+SELECT DISTINCT
+	SiteName
+ FROM
+	park_area p
+	, svt
+ WHERE
+	ST_Touches(p.geom, svt.geom)
+	AND SiteType = 'Park Site'
+```
+
 ### Finding mountain peaks
 
 *Which peaks are inside the Alpine Lakes Wilderness?*

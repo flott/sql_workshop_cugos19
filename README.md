@@ -13,8 +13,8 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
 4. Overview of tools and [functions](http://www.gaia-gis.it/gaia-sins/spatialite-sql-4.3.0.html)
 5. Examples
     - [Parks assessment](parks.md)
-    - Voting information
-    - Floodplain analysis
+    - [Voting information](voting.md)
+    - [Floodplain property analysis](northbend.md)
 6. Next steps
 
 ## QGIS / GeoPackage / Spatialite quirks

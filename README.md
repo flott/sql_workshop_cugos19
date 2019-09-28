@@ -36,3 +36,12 @@ SELECT GetGpkgMode();  -- should return 0
 SELECT EnableGpkgMode();  -- should return NULL
 SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
 ```
+
+This is another mode if you want the output data to be in Spatialite's binary format. Amphibious Mode and GPKG mode are mutually exclusive, so you have to disable one before enabling the other.
+[More info here](https://www.gaia-gis.it/fossil/libspatialite/wiki?name=4.3.0+functions#2).
+
+```sql
+SELECT DisableGpkgAmphibiousMode();
+SELECT EnableGpkgAmphibiousMode();
+SELECT GetGpkgAmphibiousMode();
+```

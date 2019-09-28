@@ -10,7 +10,7 @@ SELECT p.name
 FROM votdst_area p
     , legdst_area w
 WHERE p.votdst = '2084'
-    AND ST_Intersects(p.geom, w.geom)
+    AND ST_Intersects(p.geom, w.geom) = 1
 ```
 
 We got two different legislative districts because the geometry isn't drawn perfectly. 

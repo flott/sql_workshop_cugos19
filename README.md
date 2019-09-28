@@ -32,7 +32,6 @@ If spatial functions stop working, the "turn it off and on again" approach works
 
 ```sql
 SELECT DisableGpkgMode(); -- should return NULL
-SELECT GetGpkgMode();  -- should return 0
 SELECT EnableGpkgMode();  -- should return NULL
 SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
 ```

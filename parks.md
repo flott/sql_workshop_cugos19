@@ -115,6 +115,21 @@ ORDER BY sitename;
 
 For details on the spatial relationships, the [PostGIS documentation](https://postgis.net/docs/reference.html#Spatial_Relationships_Measurements) has good examples, or the Wikipedia articles on [Spatial Relation](https://en.wikipedia.org/wiki/Spatial_relation) or [DE-9IM](https://en.wikipedia.org/wiki/DE-9IM).
 
+*What's the biggest park owned and managed by King County?*
+
+```sql
+SELECT
+	SITENAME
+	, ST_Area(geom) / 43560 AS acres
+FROM park_area
+WHERE
+	SITETYPE = 'Park Site'
+	AND OWNERTYPE = 'King County Parks'
+	AND MANAGETYPE = 'King County Parks'
+ORDER BY acres DESC
+```
+Go down to the bottom of the list. *What's that tiny park?!*
+
 *How many miles of trails are there in King County?*
 
 ```sql

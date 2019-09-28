@@ -52,7 +52,7 @@ GROUP BY PROPTYPE
 Be sure to use distinct when doing counts based on spatial joins or intersections, becaues you can have multiple pieces of floodplain geometry intersect a single parcel.
 
 ```sql
-SELECT COUNT(DISTINCT p.fid)
+SELECT COUNT(DISTINCT p.PIN)
 FROM parcel_address_area p
 JOIN fldplain_100yr_area f
 	ON ST_Intersects(p.geom, f.geom) = 1
@@ -60,13 +60,21 @@ WHERE CTYNAME = 'NORTH BEND'
 -- 1139 parcels
 ```
 
+Maybe that's alarmist. What about parcels completely contained in the floodplain instead?
+
 ```sql
-SELECT COUNT(DISTINCT p.fid)
+-- need to make this a single feature.
+WITH f AS (
+    SELECT ST_Union(geom) as geom
+	FROM fldplain_100yr_area
+    )
+
+SELECT COUNT(DISTINCT p.PIN)
 FROM parcel_address_area p
 JOIN fldplain_100yr_area f
-	ON ST_Intersects(p.geom, f.geom) = 1
+	ON ST_Contains(f.geom, p.geom) = 1
 WHERE CTYNAME = 'NORTH BEND'
--- 1139 parcels
+--  908 parcels -- still a lot!
 ```
 
 ### Property types in the floodplain

@@ -18,7 +18,7 @@ SELECT 1 AS fid
 FROM city c, floodplain f
 ```
 
-## Summarizing and spatial indexing
+## Summarizing data based on spatial relationships
 
 Let's say you're writing an article about flood risk in North Bend. You want to describe the affected properties.
 
@@ -69,6 +69,8 @@ WHERE CTYNAME = 'NORTH BEND'
 -- 1139 parcels
 ```
 
+### Property types in the floodplain
+
 We don't want to write all these numbers down! We can make the intersection query return 0 for false and 1 for true, then roll these up.
 
 Here's the whole list.
@@ -108,6 +110,7 @@ FROM
     )
 GROUP BY PROPTYPE
 ```
+### Value of potentially affected properties
 
 What's the appraised value of improvements for parcels that are in the floodplain?
 
@@ -146,6 +149,7 @@ LIMIT 5
 ```
 Uh oh, be careful, Nintendo!
 
+### Present use breakdown of affected parcels
 
 What about a breakdown of all the different property uses in the floodplain and their values?
 
@@ -166,6 +170,8 @@ WHERE APPR_IMPR > 0
 GROUP BY PREUSE_DESC
 ORDER BY "Total Value" DESC
 ```
+
+### Finding homes in a specific flood zone
 
 Let's find single family homes in shallow flooding areas, they might be good candidates for home elevation projects.
 

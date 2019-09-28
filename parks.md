@@ -115,6 +115,8 @@ ORDER BY sitename;
 
 For details on the spatial relationships, the [PostGIS documentation](https://postgis.net/docs/reference.html#Spatial_Relationships_Measurements) has good examples, or the Wikipedia articles on [Spatial Relation](https://en.wikipedia.org/wiki/Spatial_relation) or [DE-9IM](https://en.wikipedia.org/wiki/DE-9IM).
 
+### Fun park stats
+
 *What's the biggest park owned and managed by King County?*
 
 ```sql
@@ -130,6 +132,8 @@ ORDER BY acres DESC
 ```
 Go down to the bottom of the list. *What's that tiny park?!*
 
+### Trail info
+
 *How many miles of trails are there in King County?*
 
 ```sql
@@ -144,6 +148,8 @@ SELECT Surf_Type AS "Surface Type"
 FROM trail_line t
 GROUP BY Surf_Type
 ```
+
+### Finding mountain peaks
 
 *Which peaks are inside the Alpine Lakes Wilderness?*
 

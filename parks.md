@@ -15,7 +15,7 @@ What if you don't want to return everything? You can choose the columns. Treat t
 
 ```sql
 -- sometimes column names are case sensitive. Best to match what you see.
-SELECT NAME, ELEV
+SELECT name, elev
 FROM mtpeaks_point
 ```
 
@@ -55,6 +55,14 @@ LIMIT 5
 ```
 
 ### Filtering
+
+*Find peaks above 5000 feet*
+
+```sql
+SELECT name, elev
+FROM mtpeaks_point
+WHERE elev > 5000
+```
 
 *Filter park facility points to just show King County Parks assets*
 
@@ -107,8 +115,22 @@ ORDER BY sitename;
 
 For details on the spatial relationships, the [PostGIS documentation](https://postgis.net/docs/reference.html#Spatial_Relationships_Measurements) has good examples, or the Wikipedia articles on [Spatial Relation](https://en.wikipedia.org/wiki/Spatial_relation) or [DE-9IM](https://en.wikipedia.org/wiki/DE-9IM).
 
+*How many miles of trails are there in King County?*
 
-*Which peaks are inside King County Parks?*
+```sql
+SELECT SUM(ST_Length(t.geom)) / 5280 AS trail_miles
+FROM trail_line t
+```
+
+*How many miles of trail are there by the surface type?*
+```sql
+SELECT Surf_Type AS "Surface Type"
+, ROUND(SUM(ST_Length(t.geom)) / 5280,1) AS "Length (miles)"
+FROM trail_line t
+GROUP BY Surf_Type
+```
+
+*Which peaks are inside the Alpine Lakes Wilderness?*
 
 ```sql
 SELECT m.name, p.sitename
@@ -118,7 +140,7 @@ WHERE ST_Within(m.geom, p.geom) = 1
 AND p.sitename = 'Alpine Lakes Wilderness'
 ```
 
-You can also use the spatial relationships in `JOIN` statements.
+You can also use spatial relationships in `JOIN` statements.
 
 ```sql
 SELECT m.name, p.sitename

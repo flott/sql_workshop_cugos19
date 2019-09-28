@@ -12,7 +12,7 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
 3. Overview of geospatial databases
 4. Overview of tools and [functions](http://www.gaia-gis.it/gaia-sins/spatialite-sql-4.3.0.html)
 5. Examples
-    - Parks assessment
+    - [Parks assessment](parks.md)
     - Voting information
     - Floodplain analysis
 6. Next steps
@@ -20,6 +20,7 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
 ## QGIS / GeoPackage / Spatialite quirks
 
 To use Spatialite functions on GeoPackages in QGIS, you need to run these queries first.
+`GetGpkgMode()` is just a check, but it's how you can verify that it's working.
 
 ```sql
 SELECT GetGpkgMode();  -- just a check. should return 0

@@ -39,8 +39,8 @@ For starters, how many parcels are in North Bend?
 SELECT COUNT(fid)
 FROM parcels
 WHERE CTYNAME = 'NORTH BEND'
--- 2653 parcels
 ```
+2653 parcels
 
 ```sql
 SELECT PROPTYPE, COUNT(fid)
@@ -57,13 +57,13 @@ FROM parcels p
 JOIN floodplain f
 	ON ST_Intersects(p.geometry, f.geometry) = 1
 WHERE CTYNAME = 'NORTH BEND'
--- 1139 parcels
 ```
+1139 parcels
 
 Maybe that's alarmist. What about parcels completely contained in the floodplain instead?
+Dissolve the floodplain into a single feature with `ST_Union`.
 
 ```sql
--- need to make this a single feature.
 WITH floodplain_dissolved AS (
     SELECT ST_Union(geometry) as geometry
 	FROM floodplain
@@ -73,8 +73,8 @@ FROM parcels p
 JOIN floodplain_dissolved f
 	ON ST_Contains(f.geometry, p.geometry) = 1
 WHERE CTYNAME = 'NORTH BEND'
---  964 parcels -- still a lot!
 ```
+964 parcels -- still a lot!
 
 ### Property types in the floodplain
 
@@ -133,8 +133,10 @@ WHERE p.CTYNAME = 'NORTH BEND'
 ```
 
 *What are the top properties affected?*
+
+Make the dissolved floodplain a CTE for clarity
+
 ```sql
--- make the dissolved floodplain a CTE for clarity
 WITH f AS (
     SELECT ST_Union(geometry) as geometry
 	FROM floodplain

@@ -14,7 +14,6 @@ FROM peaks
 What if you don't want to return everything? You can choose the columns. Treat these things like verb/noun syntax.
 
 ```sql
--- sometimes column names are case sensitive. Best to match what you see.
 SELECT name, elev
 FROM peaks
 ```
@@ -34,11 +33,12 @@ FROM peaks AS p
 ```sql
 SELECT name, elev
 FROM peaks
-ORDER by elev  -- ascending (ASC) is the default.
+ORDER by elev
 ```
+Ascending (`ASC`) is the default.
 
+Change to descending order with `DESC`
 ```sql
--- change to descending order
 SELECT name, elev
 FROM peaks
 ORDER by elev DESC
@@ -84,8 +84,9 @@ SELECT facilities.F_NAME
 FROM facilities
 JOIN parks
 	ON facilities.SiteName = parks.SITENAME
-WHERE facilities.f_type = 'Picnic Area'  -- you can filter results based on columns that aren't in your output table!
+WHERE facilities.f_type = 'Picnic Area'
 ```
+you can filter results based on columns that aren't in your output table!
 
 ### Grouping
 
@@ -174,8 +175,8 @@ WHERE parks.sitename = 'Alpine Lakes Wilderness'
 
 *What peaks are close to trails?*
 
+`DISTINCT` gets rid of duplicates and shows only unique rows
 ```sql
--- DISTINCT gets rid of duplicates and shows only unique rows
 SELECT DISTINCT peaks.name, peaks.elev, trails.trail_name
 FROM peaks
 JOIN trails

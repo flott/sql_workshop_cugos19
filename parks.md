@@ -8,7 +8,7 @@ Let's look at some Parks data! We'll start with simple tabular queries.
 
 ```sql
 SELECT * 
-FROM mtpeaks_point
+FROM peaks
 ```
 
 What if you don't want to return everything? You can choose the columns. Treat these things like verb/noun syntax.
@@ -16,7 +16,7 @@ What if you don't want to return everything? You can choose the columns. Treat t
 ```sql
 -- sometimes column names are case sensitive. Best to match what you see.
 SELECT name, elev
-FROM mtpeaks_point
+FROM peaks
 ```
 
 ### Aliases
@@ -26,21 +26,21 @@ You can use `AS` to give an alias to a table or column name. If you want to use 
 (3.28084 feet in a meter)
 
 ```sql
-SELECT p.name AS "Peak Name", p.ELEV/3.28084 AS elev_m
-FROM mtpeaks_point p  
+SELECT p.name AS "Peak Name", p.ELEV/3.28084 AS "Elevation (m)"
+FROM peaks AS p  
 ```
 
 ### Ordering
 ```sql
 SELECT name, elev
-FROM mtpeaks_point
+FROM peaks
 ORDER by elev  -- ascending (ASC) is the default.
 ```
 
 ```sql
 -- change to descending order
 SELECT name, elev
-FROM mtpeaks_point
+FROM peaks
 ORDER by elev DESC
 ```
 
@@ -49,7 +49,7 @@ ORDER by elev DESC
 *Just show the five highest peaks*
 ```sql
 SELECT name, elev
-FROM mtpeaks_point
+FROM peaks
 ORDER by elev DESC
 LIMIT 5
 ```
@@ -60,7 +60,7 @@ LIMIT 5
 
 ```sql
 SELECT name, elev
-FROM mtpeaks_point
+FROM peaks
 WHERE elev > 5000
 ```
 
@@ -70,7 +70,7 @@ WHERE elev > 5000
 SELECT KC_Fac_FID, f_name, f_type, sitename
 FROM facilities
 WHERE sitetype = 'Park Site'
-AND ownertype='King County Parks'
+	AND ownertype='King County Parks'
 ```
 
 ### Joining
@@ -78,12 +78,13 @@ AND ownertype='King County Parks'
 Join tables on some condition that evaluates to `TRUE`.
 
 ```sql
-SELECT f.F_NAME
-    , p.KCPARKFID
-    , p.SITENAME
-FROM park_facility_point f
-JOIN park_area p
-ON f.SiteName = p.SITENAME
+SELECT facilities.F_NAME
+    , parks.KCPARKFID
+    , parks.SITENAME
+FROM facilities
+JOIN parks
+	ON facilities.SiteName = parks.SITENAME
+WHERE facilities.f_type = 'Picnic Area'  -- you can filter results based on columns that aren't in your output table!
 ```
 
 ### Grouping
@@ -122,8 +123,8 @@ For details on the spatial relationships, the [PostGIS documentation](https://po
 ```sql
 SELECT
 	SITENAME
-	, ST_Area(geom) / 43560 AS acres
-FROM park_area
+	, ST_Area(geometry) / 43560 AS acres
+FROM parks
 WHERE
 	SITETYPE = 'Park Site'
 	AND OWNERTYPE = 'King County Parks'
@@ -137,36 +138,16 @@ Go down to the bottom of the list. *What's that tiny park?!*
 *How many miles of trails are there in King County?*
 
 ```sql
-SELECT SUM(ST_Length(t.geom)) / 5280 AS trail_miles
-FROM trail_line t
+SELECT SUM(ST_Length(trails.geometry)) / 5280 AS trail_miles
+FROM trails
 ```
 
 *How many miles of trail are there by the surface type?*
 ```sql
 SELECT Surf_Type AS "Surface Type"
-, ROUND(SUM(ST_Length(t.geom)) / 5280,1) AS "Length (miles)"
-FROM trail_line t
+	, ROUND(SUM(ST_Length(trails.geometry)) / 5280,1) AS "Length (miles)"
+FROM trails
 GROUP BY Surf_Type
-```
-
-*What parks can I get to from the Snoqualmie Valley Trail?*
-Be aware of your data! If it were just a line, we could use `ST_Crosses`, but the Snoqualmie Valley Trail right-of-way is listed as its own park site, so the results wouldn't be very exciting. Instead, let's take the Snoqualmie Valley Trail park site and see what's adjacent to it.
-
-```sql
-WITH svt AS (
-	SELECT fid, geom
-	FROM park_area
-	WHERE SiteName = 'Snoqualmie Valley Trail Site'
-	)
-
-SELECT DISTINCT
-	SiteName
- FROM
-	park_area p
-	, svt
- WHERE
-	ST_Touches(p.geom, svt.geom)
-	AND SiteType = 'Park Site'
 ```
 
 ### Finding mountain peaks
@@ -174,21 +155,21 @@ SELECT DISTINCT
 *Which peaks are inside the Alpine Lakes Wilderness?*
 
 ```sql
-SELECT m.name, p.sitename
-FROM mtpeaks_point m
-, park_area p
-WHERE ST_Within(m.geom, p.geom) = 1 
-AND p.sitename = 'Alpine Lakes Wilderness'
+SELECT peaks.name, peaks.elev
+FROM peaks
+	, parks
+WHERE ST_Within(peaks.geometry, parks.geometry) = 1 
+AND parks.sitename = 'Alpine Lakes Wilderness'
 ```
 
 You can also use spatial relationships in `JOIN` statements.
 
 ```sql
-SELECT m.name, p.sitename
-FROM mtpeaks_point m
-JOIN park_area p
-ON ST_Within(m.geom, p.geom) = 1 
-WHERE p.sitename = 'Alpine Lakes Wilderness'
+SELECT peaks.name, peaks.elev
+FROM peaks
+JOIN parks
+  ON ST_Within(peaks.geometry, parks.geometry) = 1 
+WHERE parks.sitename = 'Alpine Lakes Wilderness'
 ```
 
 *What peaks are close to trails?*
@@ -196,7 +177,24 @@ WHERE p.sitename = 'Alpine Lakes Wilderness'
 ```sql
 -- DISTINCT gets rid of duplicates and shows only unique rows
 SELECT DISTINCT peaks.name, peaks.elev, trails.trail_name
-FROM mtpeaks_point peaks
-JOIN trail_line trails
-ON ST_Distance(peaks.geom, trails.geom) < 100
+FROM peaks
+JOIN trails
+  ON ST_Distance(peaks.geometry, trails.geometry) < 100
+```
+
+*What parks can I get to from the Snoqualmie Valley Trail?*
+Be aware of your data! If it were just a line, we could use `ST_Crosses`, but the Snoqualmie Valley Trail right-of-way is listed as its own park site, so the results wouldn't be very exciting. Instead, let's take the Snoqualmie Valley Trail park site and see what's adjacent to it.
+
+```sql
+SELECT DISTINCT
+	SiteName
+FROM
+	parks AS p
+JOIN (
+	SELECT fid, geometry
+	FROM parks
+	WHERE SiteName = 'Snoqualmie Valley Trail Site'
+	) AS svt
+  ON ST_Touches(p.geometry, svt.geometry)
+    AND SiteType = 'Park Site'
 ```

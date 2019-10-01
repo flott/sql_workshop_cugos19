@@ -37,14 +37,14 @@ Always be sure to look at [the metadata](http://www5.kingcounty.gov/sdc/Metadata
 For starters, how many parcels are in North Bend?
 ```sql
 SELECT COUNT(fid)
-FROM parcel_address_area
+FROM parcels
 WHERE CTYNAME = 'NORTH BEND'
 -- 2653 parcels
 ```
 
 ```sql
 SELECT PROPTYPE, COUNT(fid)
-FROM parcel_address_area
+FROM parcels
 WHERE CTYNAME = 'NORTH BEND'
 GROUP BY PROPTYPE
 ```
@@ -53,9 +53,9 @@ Be sure to use distinct when doing counts based on spatial joins or intersection
 
 ```sql
 SELECT COUNT(DISTINCT p.PIN)
-FROM parcel_address_area p
-JOIN fldplain_100yr_area f
-	ON ST_Intersects(p.geom, f.geom) = 1
+FROM parcels p
+JOIN floodplain f
+	ON ST_Intersects(p.geometry, f.geometry) = 1
 WHERE CTYNAME = 'NORTH BEND'
 -- 1139 parcels
 ```
@@ -64,17 +64,16 @@ Maybe that's alarmist. What about parcels completely contained in the floodplain
 
 ```sql
 -- need to make this a single feature.
-WITH f AS (
-    SELECT ST_Union(geom) as geom
-	FROM fldplain_100yr_area
+WITH floodplain_dissolved AS (
+    SELECT ST_Union(geometry) as geometry
+	FROM floodplain
     )
-
 SELECT COUNT(DISTINCT p.PIN)
-FROM parcel_address_area p
-JOIN fldplain_100yr_area f
-	ON ST_Contains(f.geom, p.geom) = 1
+FROM parcels p
+JOIN floodplain_dissolved f
+	ON ST_Contains(f.geometry, p.geometry) = 1
 WHERE CTYNAME = 'NORTH BEND'
---  908 parcels -- still a lot!
+--  964 parcels -- still a lot!
 ```
 
 ### Property types in the floodplain
@@ -86,9 +85,9 @@ Here's the whole list.
 SELECT DISTINCT
 	p.PIN
 	, p.PROPTYPE
-	, ST_Intersects(p.geom, f.geom) as in_floodplain
-FROM parcel_address_area p
-	, fldplain_100yr_area f
+	, ST_Intersects(p.geometry, f.geometry) as in_floodplain
+FROM parcels p
+	, floodplain f
 WHERE CTYNAME = 'NORTH BEND'
 ```
 
@@ -97,26 +96,26 @@ Now summarized. We can't do math on a new column, so it has to be wrapped in a s
 ```sql
 SELECT
     CASE
-        WHEN PROPTYPE = 'C' THEN 'Commercial'
-        WHEN PROPTYPE = 'R' THEN 'Residential'
-		WHEN PROPTYPE = 'K' THEN 'Condo'
+        WHEN proptype = 'C' THEN 'Commercial'
+        WHEN proptype = 'R' THEN 'Residential'
+		WHEN proptype = 'K' THEN 'Condo'
         END AS "Property Type"
     , COUNT(PIN) AS "Total parcels"
     , SUM(in_floodplain) AS "Number in floodplain"
-    , ROUND(
-		CAST(SUM(in_floodplain) AS FLOAT) / CAST(COUNT(PIN) AS FLOAT) * 100
-		, 1) AS "Percent in floodplain"
+    , ROUND(CAST(SUM(in_floodplain) AS FLOAT) / CAST(COUNT(PIN) AS FLOAT) * 100,1) AS "Percent in floodplain"
 FROM
-    (SELECT DISTINCT
+    (
+    SELECT DISTINCT
         p.PIN
         , p.PROPTYPE
-        , ST_Intersects(p.geom, f.geom) as in_floodplain
-    FROM parcel_address_area p
-        , fldplain_100yr_area f
+        , ST_Intersects(p.geometry, f.geometry) as in_floodplain
+    FROM 
+        parcels p
+        , floodplain f
     WHERE p.CTYNAME = 'NORTH BEND'
-        AND p.PROPTYPE IN ('C','R','K')  -- ignore null proptypes like rivers
+        AND p.PROPTYPE IN ('C','R','K')
     )
-GROUP BY PROPTYPE
+GROUP BY proptype
 ```
 ### Value of potentially affected properties
 
@@ -125,12 +124,11 @@ What's the appraised value of improvements for parcels that are in the floodplai
 ```sql
 SELECT
     SUM(APPR_IMPR)
-FROM parcel_address_area p
+FROM parcels p
 JOIN
-    -- Going to dissolve this into one feature to avoid double-counting.
-	(SELECT ST_Union(geom) as geom
-	FROM fldplain_100yr_area) f
-    ON st_intersects(p.geom, f.geom) = 1
+	(SELECT ST_Union(geometry) as geometry
+	FROM floodplain) f
+    ON ST_Intersects(p.geometry, f.geometry) = 1
 WHERE p.CTYNAME = 'NORTH BEND'
 ```
 
@@ -138,18 +136,17 @@ WHERE p.CTYNAME = 'NORTH BEND'
 ```sql
 -- make the dissolved floodplain a CTE for clarity
 WITH f AS (
-    SELECT ST_Union(geom) as geom
-	FROM fldplain_100yr_area
+    SELECT ST_Union(geometry) as geometry
+	FROM floodplain
     )
-
 SELECT
 	p.PIN
 	,p.PROP_NAME
     ,p.APPR_IMPR
     ,p.PREUSE_DESC
-FROM parcel_address_area p
+FROM parcels p
 JOIN f
-    ON ST_Intersects(p.geom, f.geom) = 1
+    ON ST_Intersects(p.geometry, f.geometry) = 1
 WHERE APPR_IMPR > 0
     AND p.CTYNAME = 'NORTH BEND'
 ORDER BY APPR_IMPR DESC
@@ -163,16 +160,15 @@ What about a breakdown of all the different property uses in the floodplain and 
 
 ```sql
 WITH f AS (
-    SELECT ST_Union(geom) as geom
-	FROM fldplain_100yr_area
+    SELECT ST_Union(geometry) as geometry
+	FROM floodplain
     )
-
 SELECT
 	PREUSE_DESC AS "Present Use"
 	, SUM(APPR_IMPR) AS "Total Value"
-FROM parcel_address_area p
+FROM parcels p
 JOIN f
-    ON ST_Intersects(p.geom, f.geom) = 1
+    ON ST_Intersects(p.geometry, f.geometry) = 1
 WHERE APPR_IMPR > 0
     AND p.CTYNAME = 'NORTH BEND'
 GROUP BY PREUSE_DESC
@@ -187,9 +183,9 @@ Let's find single family homes in shallow flooding areas, they might be good can
 SELECT
     p.PIN
     , p.ADDR_FULL
-FROM parcel_address_area p
-JOIN fldplain_100yr_area f
-    ON ST_Intersects(p.geom, f.geom) = 1
+FROM parcels p
+JOIN floodplain f
+    ON ST_Intersects(p.geometry, f.geometry) = 1
 WHERE 
     p.CTYNAME = 'NORTH BEND'
     AND p.APPR_IMPR > 0

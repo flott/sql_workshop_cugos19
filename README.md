@@ -12,35 +12,18 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
 3. Overview of geospatial databases
 4. Overview of tools and [functions](http://www.gaia-gis.it/gaia-sins/spatialite-sql-4.3.0.html)
 5. Examples
-    - [Parks assessment](parks.md)
-    - [Voting information](voting.md)
+    - [SQL basics / Parks assessment](parks.md)
     - [Floodplain property analysis](northbend.md)
+    - [Voting information](voting.md)
 6. Next steps
 
 ## QGIS / GeoPackage / Spatialite quirks
 
 To use Spatialite functions on GeoPackages in QGIS, you need to run these queries first.
-`GetGpkgMode()` is just a check, but it's how you can verify that it's working.
+`GetGpkgMode()` is just a check, but it's how you can verify that it's working. 
+Using Virtual Layers get around this quirk, but queries will be a little slower.
 
 ```sql
-SELECT GetGpkgMode();  -- just a check. should return 0
 SELECT EnableGpkgMode();  -- should return NULL
 SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
-```
-
-If spatial functions stop working, the "turn it off and on again" approach works. This tends to happen when you haven't run a query in a while -- I think QGIS resets the database connection, and GeoPackage mode is only active for the duration of a connection.
-
-```sql
-SELECT DisableGpkgMode(); -- should return NULL
-SELECT EnableGpkgMode();  -- should return NULL
-SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
-```
-
-This is another mode if you want the output data to be in Spatialite's binary format. Amphibious Mode and GPKG mode are mutually exclusive, so you have to disable one before enabling the other.
-[More info here](https://www.gaia-gis.it/fossil/libspatialite/wiki?name=4.3.0+functions#2).
-
-```sql
-SELECT DisableGpkgAmphibiousMode();
-SELECT EnableGpkgAmphibiousMode();
-SELECT GetGpkgAmphibiousMode();
 ```

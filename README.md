@@ -16,14 +16,3 @@ Data provided by permission of [King County](https://gis-kingcounty.opendata.arc
     - [Floodplain property analysis](northbend.md)
     - [Voting information](voting.md)
 6. Next steps
-
-## QGIS / GeoPackage / Spatialite quirks
-
-To use Spatialite functions on GeoPackages in QGIS, you need to run these queries first.
-`GetGpkgMode()` is just a check, but it's how you can verify that it's working. 
-Using Virtual Layers get around this quirk, but queries will be a little slower.
-
-```sql
-SELECT EnableGpkgMode();  -- should return NULL
-SELECT GetGpkgMode();  -- now it should return 1 (TRUE)
-```

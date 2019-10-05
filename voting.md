@@ -63,3 +63,29 @@ FROM
 WHERE distance = min_distance
 ORDER BY distance DESC
 ```
+
+How many voters does the closest ballot dropbox serve?
+
+```sql
+SELECT
+    dropbox, count(precinct) as num_precincts, sum(voters) as sum_voters
+FROM
+  (
+  SELECT
+    p.NAME AS precinct
+    , p.SUM_VOTERS as voters
+    , b.NAME AS dropbox
+    , ST_Distance(ST_Centroid(p.geometry), b.geometry) AS distance
+    , MIN(ST_Distance(ST_Centroid(p.geometry), b.geometry)) 
+        OVER (PARTITION BY p.NAME) AS min_distance 
+  FROM
+    precincts AS p
+    , ballot_dropboxes AS b
+  WHERE
+    p.NAME LIKE 'SEA %'
+    AND distance < 5280 * 3
+  )
+WHERE distance = min_distance
+GROUP BY dropbox
+ORDER BY sum_voters DESC
+```

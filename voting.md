@@ -72,7 +72,7 @@ SELECT
 FROM
   (
   SELECT
-    p.NAME AS precinct
+    p.NAME AS p_name
     , p.SUM_VOTERS as voters
     , b.NAME AS dropbox
     , ST_Distance(ST_Centroid(p.geometry), b.geometry) AS distance
@@ -88,4 +88,27 @@ FROM
 WHERE distance = min_distance
 GROUP BY dropbox
 ORDER BY sum_voters DESC
+```
+
+What if you wanted the nearest **two** dropboxes to each precinct?
+```sql
+SELECT
+    p_name, box_name, distance
+FROM
+  (
+  SELECT
+    p.NAME AS p_name
+    , b.NAME AS box_name
+    , ST_Distance(ST_Centroid(p.geometry), b.geometry) AS distance
+    , ROW_NUMBER()
+        OVER (PARTITION BY p.NAME ORDER BY ST_Distance(ST_Centroid(p.geometry), b.geometry)) AS dist_rank
+  FROM
+    precincts AS p
+    , ballot_dropboxes AS b
+  WHERE
+    p.NAME LIKE 'SEA %'
+    AND distance < 5280 * 3
+  )
+WHERE dist_rank <= 2
+ORDER BY p_name
 ```

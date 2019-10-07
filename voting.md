@@ -91,6 +91,8 @@ ORDER BY sum_voters DESC
 ```
 
 What if you wanted the nearest **two** dropboxes to each precinct?
+We can order the results within a window, and match on their rank instead of just the distance.
+
 ```sql
 SELECT
     p_name, box_name, distance
